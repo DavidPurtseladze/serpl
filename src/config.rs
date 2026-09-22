@@ -381,6 +381,34 @@ fn parse_color(s: &str) -> Option<Color> {
   }
 }
 
+pub fn find_keys_for_value(
+  key_bindings: &HashMap<Vec<KeyEvent>, AppAction>,
+  action: AppAction,
+) -> Option<Vec<Vec<KeyEvent>>> {
+  let mut bound_keys = Vec::new();
+  for (key, value) in key_bindings.iter() {
+    if value == &action {
+      bound_keys.push(key.clone());
+    }
+  }
+  if bound_keys.is_empty() {
+    None
+  } else {
+    Some(bound_keys)
+  }
+}
+
+pub fn is_bound_key(bound_keys: &Option<Vec<Vec<KeyEvent>>>, key: &KeyEvent) -> bool {
+  if let Some(bound_keys) = bound_keys {
+    for keys in bound_keys {
+      if keys.contains(key) {
+        return true;
+      }
+    }
+  }
+  false
+}
+
 #[cfg(test)]
 mod tests {
   use pretty_assertions::assert_eq;
