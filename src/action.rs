@@ -97,6 +97,7 @@ impl<'de> Deserialize<'de> for AppAction {
           // Redux actions
           "LoopOverTabs" => Ok(AppAction::Action(Action::LoopOverTabs)),
           "BackLoopOverTabs" => Ok(AppAction::Action(Action::BackLoopOverTabs)),
+          "ToggleInputMode" => Ok(AppAction::Action(Action::ToggleInputMode)),
           "SearchTab" => Ok(AppAction::Action(Action::SetActiveTab { tab: Tab::Search })),
           "ReplaceTab" => Ok(AppAction::Action(Action::SetActiveTab { tab: Tab::Replace })),
           "SearchResultTab" => Ok(AppAction::Action(Action::SetActiveTab { tab: Tab::SearchResult })),

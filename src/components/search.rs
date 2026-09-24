@@ -100,9 +100,12 @@ impl Component for Search {
 
   fn handle_key_events(&mut self, key: KeyEvent, state: &State) -> Result<Option<AppAction>> {
     if state.focused_screen == FocusedScreen::SearchInput {
+      let toggle_input_mode_keybindings =
+        find_keys_for_value(&self.config.keybindings.0, AppAction::Action(Action::ToggleInputMode));
+
       match (key.code, key.modifiers) {
         (KeyCode::Tab, _) | (KeyCode::BackTab, _) | (KeyCode::Char('b'), KeyModifiers::CONTROL) => Ok(None),
-        (KeyCode::Char('n'), KeyModifiers::CONTROL) => {
+        _ if is_bound_key(&toggle_input_mode_keybindings, &key) => {
           #[cfg(feature = "ast_grep")]
           let search_text_kind = match state.search_text.kind {
             SearchTextKind::Simple => SearchTextKind::MatchCase,

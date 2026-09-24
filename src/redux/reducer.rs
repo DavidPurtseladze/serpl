@@ -167,6 +167,7 @@ pub fn reducer(state: State, action: Action) -> State {
         state
       }
     },
+    Action::ToggleInputMode => state,
   }
 }
 
