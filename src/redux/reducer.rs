@@ -137,10 +137,24 @@ pub fn reducer(state: State, action: Action) -> State {
     },
     Action::RemoveFileFromList { index } => {
       let mut new_search_result = state.search_result.clone();
-      if index < new_search_result.list.len() {
-        new_search_result.list.remove(index);
+
+      if index >= new_search_result.list.len() {
+        return state;
       }
-      State { search_result: new_search_result, ..state }
+
+      new_search_result.list.remove(index);
+
+      for (position, result) in new_search_result.list.iter_mut().enumerate() {
+        result.index = Some(position);
+      }
+
+      let new_selected_result =
+        match previewed_index_after_removal(state.selected_result.index, index, new_search_result.list.len()) {
+          Some(position) => new_search_result.list[position].clone(),
+          None => SearchResultState::default(),
+        };
+
+      State { search_result: new_search_result, selected_result: new_selected_result, ..state }
     },
 
     Action::RemoveLineFromFile { file_index, line_index } => {
@@ -172,6 +186,16 @@ pub fn reducer(state: State, action: Action) -> State {
     },
     Action::ToggleInputMode => state,
   }
+}
+
+fn previewed_index_after_removal(previewed: Option<usize>, removed_index: usize, new_length: usize) -> Option<usize> {
+  if new_length == 0 {
+    return None;
+  }
+
+  let position = previewed?;
+  let shifted = if position > removed_index { position - 1 } else { position };
+  Some(shifted.min(new_length - 1))
 }
 
 fn check_dialog_visible(state: &State) -> bool {
