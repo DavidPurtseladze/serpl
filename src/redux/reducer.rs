@@ -5,9 +5,12 @@ use regex::Regex;
 use super::{action::Action, state::State};
 use crate::{
   mode::Mode,
-  redux::state::{
-    Dialog, FocusedScreen, NotificationState, ReplaceTextState, SearchListState, SearchResultState, SearchTextKind,
-    SearchTextState,
+  redux::{
+    state::{
+      Dialog, FocusedScreen, NotificationState, ReplaceTextState, SearchListState, SearchResultState, SearchTextKind,
+      SearchTextState,
+    },
+    utils::selection_after_removals,
   },
   tabs::Tab,
 };
@@ -142,17 +145,18 @@ pub fn reducer(state: State, action: Action) -> State {
         return state;
       }
 
+      let new_previewed_index =
+        selection_after_removals(state.selected_result.index, &[index], new_search_result.list.len());
       new_search_result.list.remove(index);
 
       for (position, result) in new_search_result.list.iter_mut().enumerate() {
         result.index = Some(position);
       }
 
-      let new_selected_result =
-        match previewed_index_after_removal(state.selected_result.index, index, new_search_result.list.len()) {
-          Some(position) => new_search_result.list[position].clone(),
-          None => SearchResultState::default(),
-        };
+      let new_selected_result = match new_previewed_index {
+        Some(position) => new_search_result.list[position].clone(),
+        None => SearchResultState::default(),
+      };
 
       State { search_result: new_search_result, selected_result: new_selected_result, ..state }
     },
@@ -186,16 +190,6 @@ pub fn reducer(state: State, action: Action) -> State {
     },
     Action::ToggleInputMode => state,
   }
-}
-
-fn previewed_index_after_removal(previewed: Option<usize>, removed_index: usize, new_length: usize) -> Option<usize> {
-  if new_length == 0 {
-    return None;
-  }
-
-  let position = previewed?;
-  let shifted = if position > removed_index { position - 1 } else { position };
-  Some(shifted.min(new_length - 1))
 }
 
 fn check_dialog_visible(state: &State) -> bool {
